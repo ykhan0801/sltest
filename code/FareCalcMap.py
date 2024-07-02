@@ -114,7 +114,7 @@ if destination_station == "Any":
                         fill_opacity=1,
                         tooltip=tool_tip,
                     ).add_to(m)
-else:
+elif destination_station != chosen_station:
     coords = [rail_nodes.loc[rail_nodes['stop_name'] == destination_station, 'stop_lat'].iloc[0], 
                 rail_nodes.loc[rail_nodes['stop_name'] == destination_station, 'stop_lon'].iloc[0]]
     fare_zone = fares_from_chosen_station.loc[fares_from_chosen_station['Destination'] == destination_station, 'Value'].values[0]
