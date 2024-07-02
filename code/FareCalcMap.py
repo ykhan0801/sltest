@@ -94,6 +94,9 @@ destination_list = sorted(list(fare_zone_data["Destination"].unique()))
 destination_list.insert(0, "Any")
 destination_station = st.sidebar.selectbox("Select a Destination Station:", destination_list, index=0)
 
+if destination_station == chosen_station:
+    st.sidebar.write("The selected origin and destination stations are the same.")
+
 if destination_station == "Any":
     #Loop through unique stations to add marker on map
     for i, row in fares_from_chosen_station.iterrows():
