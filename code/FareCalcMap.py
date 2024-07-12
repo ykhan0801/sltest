@@ -176,7 +176,7 @@ elif destination_station != chosen_station:
                     color="#4e4e4e",
                     opacity=0.6,
                     weight=1,
-                    fill_color=colors.rgb2hex(colour_dict[fare_zone], keep_alpha=True),
+                    fill_color=colors.rgb2hex(colour_dict2[fare_zone], keep_alpha=True),
                     fill_opacity=1,
                     tooltip=tool_tip,
                 ).add_to(m)
