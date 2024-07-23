@@ -332,8 +332,3 @@ with legend_col:
     st.text("")
     systra_image_path = os.path.join(image_path, "Systra.png")
     st.image(systra_image_path, width=120)
-
-st.write("Map Data", st_data)
-if st_data and st_data.get("last_object_clicked"):
-    last_clicked = st_data["last_object_clicked"]
-    st.write(f"Clicked Location: {last_clicked}")
