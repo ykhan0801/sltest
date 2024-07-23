@@ -149,7 +149,7 @@ if destination_station == "Any":
         origin = fares_from_chosen_station.iloc[i]['Origin']
         destination = fares_from_chosen_station.iloc[i]['Destination']
         fare = "€" +  f"{fares_from_chosen_station.iloc[i]['Fare']:.2f}"
-        tool_tip = f"Origin: {origin}, Destination: {destination}, Fare: {fare}, Fare Zone:{fare_zone}"
+        tool_tip = f"<b>Origin:</b> {origin}<br> <b>Destination:</b> {destination}<br> <b>Fare:</b> {fare}<br> <b>Fare Zone:</b> {fare_zone}"
 
         folium.CircleMarker(
                         location=coords,
