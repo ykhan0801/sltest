@@ -184,7 +184,7 @@ elif destination_station != chosen_station:
     origin = chosen_station
     destination = destination_station
     fare = "€" +  f"{fares_from_chosen_station.loc[fares_from_chosen_station['Destination'] == destination_station, 'Fare'].values[0]:.2f}"
-    tool_tip = f"Origin: {origin}, Destination: {destination}, Fare: {fare}, Fare Zone:{fare_zone}"
+    tool_tip = f"<b>Origin:</b> {origin}<br> <b>Destination:</b> {destination}<br> <b>Fare:</b> {fare}<br> <b>Fare Zone:</b> {fare_zone}"
 
     folium.CircleMarker(
                     location=coords,
