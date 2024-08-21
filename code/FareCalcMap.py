@@ -14,7 +14,6 @@ from folium.plugins import BeautifyIcon
 from branca.element import Template, MacroElement
 import streamlit.components.v1 as components
 
-# st.set_page_config(layout="centered")
 st.set_page_config(layout="wide")
 
 # Map settings
@@ -29,17 +28,24 @@ logo_image_path = os.path.join(main_path,'..', 'pics', "logo2.png")
 st.sidebar.image(logo_image_path, width = 300)
 
 # Read in data for OD pairs and fares, filter for the ticket selection
-fare_zone_data = pd.read_csv(os.path.join(main_path, '..', 'data', "OD_Pairs2.csv"), encoding='unicode_escape')
+fare_zone_data = pd.read_csv(os.path.join(main_path, '..', 'data', "ODPairs(withZones).csv"), encoding='unicode_escape')
 fares_df = pd.read_csv(os.path.join(main_path,'..', 'data',  "Fares.csv"), encoding='unicode_escape')
+period_fares_df = pd.read_csv(os.path.join(main_path,'..', 'data',  "PeriodFares2.csv"), encoding='unicode_escape')
 
 payment_list = list(fares_df["PaymentMeans"].unique())
+payment_list.append('Period ')
 chosen_payment_type = st.sidebar.selectbox("Select a Payment Type:", payment_list, index=1)
-fares_df = fares_df[(fares_df['PaymentMeans']==chosen_payment_type)].reset_index(drop=True)
-                    
-ticket_list = list(fares_df["TicketType"].unique())
-chosen_ticket_type = st.sidebar.selectbox("Select a Ticket Type:", ticket_list, index=0)
-fares_df = fares_df[(fares_df['TicketType']==chosen_ticket_type)].reset_index(drop=True)
-fares_df = fares_df.sort_values(["Fare", "FareZone"])
+
+if chosen_payment_type == 'Period ':
+    ticket_list = list(period_fares_df["TicketType"].unique())
+    chosen_ticket_type = st.sidebar.selectbox("Select a Ticket Type:", ticket_list, index=0)
+    period_fares_df = period_fares_df[(period_fares_df['TicketType']==chosen_ticket_type)].reset_index(drop=True)
+else:
+    fares_df = fares_df[(fares_df['PaymentMeans']==chosen_payment_type)].reset_index(drop=True)
+    ticket_list = list(fares_df["TicketType"].unique())
+    chosen_ticket_type = st.sidebar.selectbox("Select a Ticket Type:", ticket_list, index=0)
+    fares_df = fares_df[(fares_df['TicketType']==chosen_ticket_type)].reset_index(drop=True)
+    fares_df = fares_df.sort_values(["Fare", "FareZone"])
 
 station_list = sorted(list(fare_zone_data["Origin"].unique()))
 chosen_station = st.sidebar.selectbox("Select an Origin Station:", station_list, index=0)
@@ -54,7 +60,11 @@ zone_3 = gpd.read_file(os.path.join(main_path, '..', 'GIS', "43km_Boundary.shp")
 # Join pair data with rail nodes shape data, fare data
 fares_from_chosen_station = fare_zone_data.loc[fare_zone_data["Origin"]==chosen_station]
 fares_from_chosen_station = fares_from_chosen_station.merge(rail_nodes, left_on="Destination", right_on="stop_name")
-fares_from_chosen_station = fares_from_chosen_station.merge(fares_df, left_on="Value", right_on="FareZone")
+
+if chosen_payment_type == 'Period ':
+    fares_from_chosen_station = fares_from_chosen_station.merge(period_fares_df, left_on="Zone", right_on="FareZone")
+else:
+    fares_from_chosen_station = fares_from_chosen_station.merge(fares_df, left_on="Value", right_on="FareZone")
 
 unique_fares = fares_df.drop_duplicates(subset=['Fare'])
 fare_num = len(fares_df)
@@ -100,17 +110,6 @@ m = folium.Map(
     control_scale=True,
     tiles="CartoDB positron",
 )
-
-#@st.cache_data
-#def load_rail(main_path):
-#    rail_df = gpd.read_file(os.path.join(main_path, '..', 'GIS', "routesint.shp"))
-#    return rail_df
-
-#Rail Lines
-#rail_df = load_rail(main_path)
-#folium.GeoJson(rail_df, name='multi_line', style_function=lambda x:{
-#    'color': '#9E9E9E',
-#    'weight': 1}).add_to(m)
 
 #Polygon shapes for city and commuter zones.
 folium.GeoJson(city_zone, style_function=lambda x:{
@@ -184,7 +183,7 @@ elif destination_station != chosen_station:
     origin = chosen_station
     destination = destination_station
     fare = "€" +  f"{fares_from_chosen_station.loc[fares_from_chosen_station['Destination'] == destination_station, 'Fare'].values[0]:.2f}"
-    tool_tip = f"<b>Origin:</b> {origin}<br> <b>Destination:</b> {destination}<br> <b>Fare:</b> {fare}<br> <b>Fare Zone:</b> {fare_zone}"
+    tool_tip = f"Origin: {origin}, Destination: {destination}, Fare: {fare}, Fare Zone:{fare_zone}"
 
     folium.CircleMarker(
                     location=coords,
@@ -208,7 +207,6 @@ border_color='transparent',
 origin_coords = [rail_nodes.loc[rail_nodes['stop_name'] == chosen_station, 'stop_lat'].iloc[0], 
                 rail_nodes.loc[rail_nodes['stop_name'] == chosen_station, 'stop_lon'].iloc[0]]
 folium.Marker(location=origin_coords, tooltip=f'Origin Station: {chosen_station}', icon=icon_star).add_to(m)
-
 colour_map_dict = {key: tuple(int(255* value)for value in rgb) for key, rgb in colour_dict2.items()}
 
 # Horizontal Legend
@@ -245,8 +243,6 @@ text-align: center;
 legend_html_end = "</tr><tr>" + fare_price_html_string + "</tr><tr>" + colour_html_string + "</tr></tbody></table></body></html>"
 legend_table_html += legend_html_end
 
-#m.save(os.path.join(main_path, '..', "outputs\output.html"))
-
 legend_vertical_html = '''
 <!doctype html>
 <html lang="en">
@@ -282,7 +278,6 @@ text-align: center;
 
 map_col, legend_col = st.columns([0.85,0.15])
 with map_col:
-    #st.header("NTA Fare Calculations Map")
     components.html(legend_table_html,
     height=100,
     )
