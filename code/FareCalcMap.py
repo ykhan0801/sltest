@@ -20,7 +20,7 @@ margins_css = """
     <style>
         .main > div {
             padding-left: 1rem;
-            padding-right: 4rem;
+            padding-right: 1rem;
             padding-top: 3rem;
             padding-bottom: 0rem;
         }
@@ -277,7 +277,7 @@ text-align: center;
 legend_html_end = "</tr><tr>" + fare_price_html_string + "</tr><tr>" + colour_html_string + "</tr></tbody></table></body></html>"
 legend_table_html += legend_html_end
 
-map_col, legend_col = st.columns([0.85,0.15])
+map_col, legend_col = st.columns([0.8,0.2])
 with map_col:
     if chosen_payment_type != 'Period ':
         components.html(legend_table_html,height=100,)
