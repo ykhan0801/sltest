@@ -196,7 +196,13 @@ if destination_station == "Any" and chosen_payment_type != 'Period ':
 elif destination_station != chosen_station  and destination_station != 'Any':
     coords = [rail_nodes.loc[rail_nodes['stop_name'] == destination_station, 'stop_lat'].iloc[0], 
                 rail_nodes.loc[rail_nodes['stop_name'] == destination_station, 'stop_lon'].iloc[0]]
-    fare_zone = fares_from_chosen_station.loc[fares_from_chosen_station['Destination'] == destination_station, 'Value'].values[0]
+    if chosen_payment_type == 'Period ':
+        fare_zone = fares_from_chosen_station.loc[fares_from_chosen_station['Destination'] == destination_station, 'Zone'].values[0]
+        d_zone = fares_from_chosen_station.loc[fares_from_chosen_station['Destination'] == destination_station, 'Value'].values[0]
+        colour = colors.rgb2hex(colour_dict2[d_zone], keep_alpha=True)
+    else:
+        fare_zone = fares_from_chosen_station.loc[fares_from_chosen_station['Destination'] == destination_station, 'Value'].values[0]
+        colour = colors.rgb2hex(colour_dict2[fare_zone], keep_alpha=True)
     origin = chosen_station
     destination = destination_station
     fare = "€" +  f"{fares_from_chosen_station.loc[fares_from_chosen_station['Destination'] == destination_station, 'Fare'].values[0]:.2f}"
@@ -208,7 +214,7 @@ elif destination_station != chosen_station  and destination_station != 'Any':
                     color="#4e4e4e",
                     opacity=0.6,
                     weight=1,
-                    fill_color=colors.rgb2hex(colour_dict2[fare_zone], keep_alpha=True),
+                    fill_color=colour,
                     fill_opacity=1,
                     tooltip=tool_tip,
                 ).add_to(m)
@@ -226,11 +232,6 @@ origin_coords = [rail_nodes.loc[rail_nodes['stop_name'] == chosen_station, 'stop
 folium.Marker(location=origin_coords, tooltip=f'Origin Station: {chosen_station}', icon=icon_star).add_to(m)
 colour_map_dict = {key: tuple(int(255* value)for value in rgb) for key, rgb in colour_dict2.items()}
 
-###
-# Take colours out for period, take the legend off
-# Keep map blank until destination is selected for period tickets. 
-
-# Horizontal Legend
 fare_zone_html_string = ""
 fare_price_html_string = ""
 colour_html_string = ""
@@ -264,39 +265,6 @@ text-align: center;
 legend_html_end = "</tr><tr>" + fare_price_html_string + "</tr><tr>" + colour_html_string + "</tr></tbody></table></body></html>"
 legend_table_html += legend_html_end
 
-legend_vertical_html = '''
-<!doctype html>
-<html lang="en">
-<head><style>
-@import url('https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-table{
-border: 1px solid black;
-width: 100%;
-font-family: "Prompt";
-}
-th, td {
-padding:8px;windows move 
-text-align: center;
-}
-</style></head>
-<body>
-    <table cellspacing="0">
-        <tbody>
-        <tr>   
-        <td style= "background-color: rgb(219, 7, 141); "</td><td> - City Zone Boundary</td>
-        </tr>
-        <tr> 
-        <td style= "background-color: rgb(91, 8, 150);"></td><td> - Commuter Zone Boundary</td>  
-        </tr>
-        <tr>
-        <td style="background-color: rgb(255, 0, 0);"></td><td> - Origin Station</td>
-        </tr>
-    </table>
-<body>
-</head>
-</html>
-'''
-
 map_col, legend_col = st.columns([0.85,0.15])
 with map_col:
     if chosen_payment_type != 'Period ':
@@ -309,6 +277,8 @@ with legend_col:
     st.header("")
     if chosen_payment_type != 'Period ':
         st.header("")
+    else:
+        st.text("")
     legend_image_path = os.path.join(main_path,'..', 'pics', "legend2.png")
     st.image(legend_image_path, width = 250)
     #components.html(legend_vertical_html, height=300)
