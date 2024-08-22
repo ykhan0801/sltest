@@ -140,7 +140,7 @@ folium.GeoJson(zone_3, style_function=lambda x:{
     'fillOpacity': 0
 }).add_to(m)
 
-zones = [{'Name': 'Zone 1', 'coords': [53.322884645726184, -6.044516976241517]},
+zones = [{'Name': 'Dublin City Zone', 'coords': [53.32247450706408, -6.107001714337153]},
          {'Name': 'Zone 2', 'coords': [53.3220643646633, -5.8913950198858664]},
          {'Name': 'Zone 3', 'coords': [53.3220643646633, -5.749946052328708]},
          {'Name': 'Zone 4', 'coords': [53.322884645929506, -5.593390884352822]}]
