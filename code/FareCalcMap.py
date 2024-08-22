@@ -16,6 +16,19 @@ import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
 
+margins_css = """
+    <style>
+        .main > div {
+            padding-left: 1rem;
+            padding-right: 4rem;
+            padding-top: 3rem;
+            padding-bottom: 0rem;
+        }
+    </style>
+"""
+
+st.markdown(margins_css, unsafe_allow_html=True)
+
 # Map settings
 map_centre = (53.33985783249015, -6.273211120984975)
 zoom = 9
@@ -169,7 +182,6 @@ if destination_station != chosen_station and destination_station !="Any":
         if row['Origin'] == chosen_station and row['Destination'] == destination_station:
             fare_type = fares_from_chosen_station.iloc[i]['Value']
             fare_cost = fares_from_chosen_station.iloc[i]['Fare']
-            #st.sidebar.write(f"This journey is in Zone {fare_type} and will cost €{fare_cost:.2f}.")
     st.sidebar.markdown('### You Have Selected:')
     st.sidebar.write(f" A {chosen_payment_type[:-1]} - {chosen_ticket_type} Ticket from {chosen_station} to {destination_station}, which costs €{fare_cost:.2f}.")
 
@@ -281,7 +293,6 @@ with legend_col:
         st.text("")
     legend_image_path = os.path.join(main_path,'..', 'pics', "legend2.png")
     st.image(legend_image_path, width = 250)
-    #components.html(legend_vertical_html, height=300)
 
     buffer = 6
     for i in range(buffer):
