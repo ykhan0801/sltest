@@ -173,7 +173,7 @@ if destination_station != chosen_station and destination_station !="Any":
     st.sidebar.markdown('### You Have Selected:')
     st.sidebar.write(f" A {chosen_payment_type[:-1]} - {chosen_ticket_type} Ticket from {chosen_station} to {destination_station}, which costs €{fare_cost:.2f}.")
 
-if destination_station == "Any":
+if destination_station == "Any" and chosen_payment_type != 'Period ':
     #Loop through unique stations to add marker on map
     for i, row in fares_from_chosen_station.iterrows():
         coords = [row["geometry"].xy[1][0], row["geometry"].xy[0][0]]
@@ -193,7 +193,7 @@ if destination_station == "Any":
                         fill_opacity=1,
                         tooltip=tool_tip,
                     ).add_to(m)
-elif destination_station != chosen_station:
+elif destination_station != chosen_station  and destination_station != 'Any':
     coords = [rail_nodes.loc[rail_nodes['stop_name'] == destination_station, 'stop_lat'].iloc[0], 
                 rail_nodes.loc[rail_nodes['stop_name'] == destination_station, 'stop_lon'].iloc[0]]
     fare_zone = fares_from_chosen_station.loc[fares_from_chosen_station['Destination'] == destination_station, 'Value'].values[0]
@@ -225,6 +225,10 @@ origin_coords = [rail_nodes.loc[rail_nodes['stop_name'] == chosen_station, 'stop
                 rail_nodes.loc[rail_nodes['stop_name'] == chosen_station, 'stop_lon'].iloc[0]]
 folium.Marker(location=origin_coords, tooltip=f'Origin Station: {chosen_station}', icon=icon_star).add_to(m)
 colour_map_dict = {key: tuple(int(255* value)for value in rgb) for key, rgb in colour_dict2.items()}
+
+###
+# Take colours out for period, take the legend off
+# Keep map blank until destination is selected for period tickets. 
 
 # Horizontal Legend
 fare_zone_html_string = ""
@@ -295,17 +299,22 @@ text-align: center;
 
 map_col, legend_col = st.columns([0.85,0.15])
 with map_col:
-    components.html(legend_table_html,
-    height=100,
-    )
+    if chosen_payment_type != 'Period ':
+        components.html(legend_table_html,height=100,)
+    else:
+        st.header("")
     st_data = st_folium(m, width=1200, returned_objects=[])
+    
 with legend_col:
     st.header("")
-    st.header("")
+    if chosen_payment_type != 'Period ':
+        st.header("")
     legend_image_path = os.path.join(main_path,'..', 'pics', "legend2.png")
     st.image(legend_image_path, width = 250)
     #components.html(legend_vertical_html, height=300)
-    for i in range(6):
+
+    buffer = 6
+    for i in range(buffer):
         st.header("")
     st.text("")
     systra_image_path = os.path.join(main_path,'..', 'pics', "Systra.png")
