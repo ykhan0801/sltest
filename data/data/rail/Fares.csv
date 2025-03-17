@@ -1,0 +1,92 @@
+PaymentMeans,TicketType,FareZone,Fare
+Cash Fares,Adult Single,D1,2
+Cash Fares,Adult Single,D2,2.6
+Cash Fares,Adult Single,D10,3
+Cash Fares,Adult Single,D11,5.1
+Cash Fares,Adult Single,D12,7.8
+Cash Fares,Adult Single,D13,9.8
+Cash Fares,Adult Single,D14,3.9
+Cash Fares,Adult Single,D90,5.1
+Cash Fares,Adult Single,D91,7.8
+Cash Fares,Adult Single,D92,9.8
+Cash Fares,Adult Single,D93,13
+Cash Fares,Adult Single,D94,15.6
+Cash Fares,Adult Single,D95,18.2
+Cash Fares,Adult Day Return,D1,4
+Cash Fares,Adult Day Return,D2,5.2
+Cash Fares,Adult Day Return,D10,5.4
+Cash Fares,Adult Day Return,D11,9.2
+Cash Fares,Adult Day Return,D12,14
+Cash Fares,Adult Day Return,D13,17.6
+Cash Fares,Adult Day Return,D14,7
+Cash Fares,Adult Day Return,D90,9.2
+Cash Fares,Adult Day Return,D91,14
+Cash Fares,Adult Day Return,D92,17.6
+Cash Fares,Adult Day Return,D93,23.4
+Cash Fares,Adult Day Return,D94,28.1
+Cash Fares,Adult Day Return,D95,32.8
+Cash Fares,Child Single,D1,0.9
+Cash Fares,Child Single,D2,0.9
+Cash Fares,Child Single,D10,1.5
+Cash Fares,Child Single,D11,2.6
+Cash Fares,Child Single,D12,3.9
+Cash Fares,Child Single,D13,4.9
+Cash Fares,Child Single,D14,2
+Cash Fares,Child Single,D90,2.6
+Cash Fares,Child Single,D91,3.9
+Cash Fares,Child Single,D92,4.9
+Cash Fares,Child Single,D93,6.5
+Cash Fares,Child Single,D94,7.8
+Cash Fares,Child Single,D95,9.1
+Cash Fares,Child Day Return,D1,1.8
+Cash Fares,Child Day Return,D2,1.8
+Cash Fares,Child Day Return,D10,2.7
+Cash Fares,Child Day Return,D11,4.6
+Cash Fares,Child Day Return,D12,7
+Cash Fares,Child Day Return,D13,8.8
+Cash Fares,Child Day Return,D14,3.5
+Cash Fares,Child Day Return,D90,4.6
+Cash Fares,Child Day Return,D91,7
+Cash Fares,Child Day Return,D92,8.8
+Cash Fares,Child Day Return,D93,11.7
+Cash Fares,Child Day Return,D94,14.1
+Cash Fares,Child Day Return,D95,16.4
+Leap Fares,Adult Single,D1,1.5
+Leap Fares,Adult Single,D2,2
+Leap Fares,Adult Single,D10,2.3
+Leap Fares,Adult Single,D11,3.9
+Leap Fares,Adult Single,D12,6
+Leap Fares,Adult Single,D13,7.5
+Leap Fares,Adult Single,D14,3
+Leap Fares,Adult Single,D90,3.9
+Leap Fares,Adult Single,D91,6
+Leap Fares,Adult Single,D92,7.5
+Leap Fares,Adult Single,D93,10
+Leap Fares,Adult Single,D94,12
+Leap Fares,Adult Single,D95,14
+Leap Fares,Young Adult Single,D1,0.75
+Leap Fares,Young Adult Single,D2,1
+Leap Fares,Young Adult Single,D10,1.15
+Leap Fares,Young Adult Single,D11,1.95
+Leap Fares,Young Adult Single,D12,3
+Leap Fares,Young Adult Single,D13,3.75
+Leap Fares,Young Adult Single,D14,1.5
+Leap Fares,Young Adult Single,D90,1.95
+Leap Fares,Young Adult Single,D91,3
+Leap Fares,Young Adult Single,D92,3.75
+Leap Fares,Young Adult Single,D93,5
+Leap Fares,Young Adult Single,D94,6
+Leap Fares,Young Adult Single,D95,7
+Leap Fares,Child Single,D1,0.65
+Leap Fares,Child Single,D2,0.65
+Leap Fares,Child Single,D10,1.15
+Leap Fares,Child Single,D11,1.95
+Leap Fares,Child Single,D12,3
+Leap Fares,Child Single,D13,3.75
+Leap Fares,Child Single,D14,1.5
+Leap Fares,Child Single,D90,1.95
+Leap Fares,Child Single,D91,3
+Leap Fares,Child Single,D92,3.75
+Leap Fares,Child Single,D93,5
+Leap Fares,Child Single,D94,6
+Leap Fares,Child Single,D95,7
