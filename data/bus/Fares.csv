@@ -101,3 +101,8 @@ Cash Fare,Child Return,N10,13.1
 Cash Fare,Child Return,N11,13.9
 Cash Fare,Child Return,N12,14.6
 Cash Fare,Child Return,N13,15.3
+Leap Fare,Adult Single,TF,1.5
+Leap Fare,Young Adult Single (TF),TF,0.75
+Leap Fare,Child Single (TF),TF,0.65
+Cash Fare,Adult Single,TF,2
+Cash Fare,Child Single,TF,0.9
