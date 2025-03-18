@@ -75,7 +75,7 @@ def zones(m):
         'fillOpacity': 0
     }).add_to(m)
 
-    zones = [{'Name': 'Dublin City Zone', 'coords': [53.32247450706408, -6.107001714337153]},
+    zones = [{'Name': 'Zone 1', 'coords': [53.32247450706408, -6.107001714337153]},
             {'Name': 'Zone 2', 'coords': [53.3220643646633, -5.8913950198858664]},
             {'Name': 'Zone 3', 'coords': [53.3220643646633, -5.749946052328708]},
             {'Name': 'Zone 4', 'coords': [53.322884645929506, -5.593390884352822]}]
@@ -311,20 +311,57 @@ def bus():
     fares_df = fares_df[(fares_df['TicketType']==chosen_ticket_type)].reset_index(drop=True)
     fares_df = fares_df.sort_values(["Fare", "FareZone"])
 
+    # Create map
+    m = folium.Map(
+        location=map_centre,
+        zoom_start=zoom,
+        control_scale=True,
+        tiles="CartoDB positron",
+    )
+
+    # Add zones to map
+    zones(m)
+
+    bus_routes = gpd.read_file(os.path.join(main_path, '..', 'GIS', 'Routes', "BE_Dublin_Commuter_Routes.shp"), encoding='unicode_escape')
+
     route_list = list(fare_zone_data["Route"].unique())
     route_list.insert(0, "Any")
+
+    if "chosen_route" not in st.session_state:
+        st.session_state.chosen_route = route_list[0]
+
     chosen_route = st.sidebar.selectbox("Select a Route:", route_list, index=0)
     if chosen_route != 'Any':
         fare_zone_data = fare_zone_data[(fare_zone_data['Route']==chosen_route)].reset_index(drop=True)
 
+        selected_route = bus_routes[bus_routes['route_name'] == chosen_route]
+
+        for _, row in selected_route.iterrows():
+            folium.GeoJson(row.geometry, name=f"Route {row['route_name']}", style_function=lambda x:{
+        'weight': 2}).add_to(m)
+
     station_list = sorted(list(fare_zone_data["Origin"].unique()))
     chosen_station = st.sidebar.selectbox("Select an Origin Station:", station_list, index=0)
 
+    if chosen_station != "Any":
+        chosen_route = fare_zone_data.loc[fare_zone_data["Origin"]==chosen_station, 'Route'].iloc[0]
+
+        selected_route = bus_routes[bus_routes['route_name'] == chosen_route]
+
+        for _, row in selected_route.iterrows():
+            folium.GeoJson(row.geometry, name=f"Route {row['route_name']}", style_function=lambda x:{
+        'weight': 2}).add_to(m)
+
+    # Df for all destinations from selected origin station
     fares_from_chosen_station = fare_zone_data.loc[fare_zone_data["Origin"]==chosen_station]
     fares_from_chosen_station = fares_from_chosen_station.merge(od_coords, left_on="Destination", right_on="Stage")
-
     fares_from_chosen_station = fares_from_chosen_station.merge(fares_df, left_on="Fare Band", right_on="FareZone")
-    print(fares_from_chosen_station)
+
+    # Df for all bus stops, not filtered by chosen station
+    all_stations = fare_zone_data.merge(od_coords, left_on="Destination", right_on="Stage")
+    all_stations = all_stations.merge(fares_df, left_on="Fare Band", right_on="FareZone")
+
+
 
     unique_fares = fares_df.drop_duplicates(subset=['Fare'])
     fare_num = len(fares_df)
@@ -348,17 +385,6 @@ def bus():
     }
 
     colour_dict2 = {k: tuple(v/255 for v in rgb) for k, rgb in colour_dict2.items()}
-
-    # Create map
-    m = folium.Map(
-        location=map_centre,
-        zoom_start=zoom,
-        control_scale=True,
-        tiles="CartoDB positron",
-    )
-
-    # Add zones to map
-    zones(m)
 
     destination_list = sorted(list(fares_from_chosen_station["Destination"].unique()))
     destination_list.insert(0, "Any")
@@ -387,7 +413,7 @@ def bus():
 
             folium.CircleMarker(
                             location=coords,
-                            radius=6,
+                            radius=4,
                             color="#4e4e4e",
                             opacity=0.6,
                             weight=1,
@@ -398,9 +424,7 @@ def bus():
     elif destination_station != chosen_station  and destination_station != 'Any':
         coords = [od_coords.loc[od_coords['Stage'] == destination_station, 'Lat'].iloc[0], 
                     od_coords.loc[od_coords['Stage'] == destination_station, 'Long'].iloc[0]]
-        
-        print(destination_station)
-        print(fares_from_chosen_station.loc[fares_from_chosen_station['Destination'] == destination_station])
+
         fare_zone = fares_from_chosen_station.loc[fares_from_chosen_station['Destination'] == destination_station, 'FareZone'].iloc[0]
         colour = 'green'
         origin = chosen_station
