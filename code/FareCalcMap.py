@@ -1,4 +1,5 @@
 import os
+import matplotlib
 import numpy as np
 import pandas as pd
 import geopandas as gpd
@@ -302,14 +303,15 @@ def bus():
     od_coords = pd.read_csv(os.path.join(data_path, 'bus', "20250314_Stage_Coords_v1.0.csv"))
     fares_df = pd.read_csv(os.path.join(data_path, 'bus', "Fares.csv"), encoding='unicode_escape')
 
-    payment_list = list(fares_df["PaymentMeans"].unique())
-    chosen_payment_type = st.sidebar.selectbox("Select a Payment Type:", payment_list, index=1)
-    fares_df = fares_df[(fares_df['PaymentMeans']==chosen_payment_type)].reset_index(drop=True)
-    
-    ticket_list = list(fares_df["TicketType"].unique())
-    chosen_ticket_type = st.sidebar.selectbox("Select a Ticket Type:", ticket_list, index=0)
-    fares_df = fares_df[(fares_df['TicketType']==chosen_ticket_type)].reset_index(drop=True)
-    fares_df = fares_df.sort_values(["Fare", "FareZone"])
+    passenger_type = ['Adult', 'Young Adult', 'Child']
+    chosen_passenger_type = st.sidebar.selectbox("Select a Passenger Type:", passenger_type, index=1)
+    if chosen_passenger_type == 'Adult':
+        fares_df = fares_df[(fares_df['TicketType'].isin(['Adult Single', 'Adult Return']))].reset_index(drop=True)
+    elif chosen_passenger_type == 'Young Adult':
+        fares_df = fares_df[(fares_df['TicketType'].isin(['Young Adult / Child Single', 'Young Adult Single (TF)', 'Adult Single', 'Adult Return']))].reset_index(drop=True)
+    elif chosen_passenger_type == 'Child':
+        fares_df = fares_df[(fares_df['TicketType'].isin(['Young Adult / Child Single', 'Child Return', 'Child Single', 'Child Single (TF)']))].reset_index(drop=True)
+
 
     # Create map
     m = folium.Map(
@@ -322,6 +324,7 @@ def bus():
     # Add zones to map
     zones(m)
 
+    # Shapefile for bus routes
     bus_routes = gpd.read_file(os.path.join(main_path, '..', 'GIS', 'Routes', "BE_Dublin_Commuter_Routes.shp"), encoding='unicode_escape')
 
     route_list = list(fare_zone_data["Route"].unique())
@@ -330,27 +333,36 @@ def bus():
     if "chosen_route" not in st.session_state:
         st.session_state.chosen_route = route_list[0]
 
+    # Single route selection using selectbox
     chosen_route = st.sidebar.selectbox("Select a Route:", route_list, index=0)
     if chosen_route != 'Any':
         fare_zone_data = fare_zone_data[(fare_zone_data['Route']==chosen_route)].reset_index(drop=True)
-
         selected_route = bus_routes[bus_routes['route_name'] == chosen_route]
 
         for _, row in selected_route.iterrows():
-            folium.GeoJson(row.geometry, name=f"Route {row['route_name']}", style_function=lambda x:{
-        'weight': 2}).add_to(m)
+                folium.GeoJson(row.geometry, name=f"Route {row['route_name']}", style_function=lambda x:{
+            'weight': 2}, tooltip=f"<b>Route:</b> {chosen_route}").add_to(m)
 
     station_list = sorted(list(fare_zone_data["Origin"].unique()))
     chosen_station = st.sidebar.selectbox("Select an Origin Station:", station_list, index=0)
 
+    # Multiple route selection from origin selectbox
     if chosen_station != "Any":
-        chosen_route = fare_zone_data.loc[fare_zone_data["Origin"]==chosen_station, 'Route'].iloc[0]
+        route_list = fare_zone_data.loc[fare_zone_data["Origin"]==chosen_station, 'Route'].unique()
+        
+        # Generate equally spaced colours for multiple routes
+        route_colours = plt.cm.viridis(np.linspace(0, 1, len(route_list)))
+        route_colour_dict = {route: matplotlib.colors.rgb2hex(route_colours[i]) for i, route in enumerate(route_list)}
+        
+        for i in range(len(route_list)):
+            selected_route = bus_routes[bus_routes['route_name'] == route_list[i]]
 
-        selected_route = bus_routes[bus_routes['route_name'] == chosen_route]
+            for _, row in selected_route.iterrows():
+                route_colour = route_colour_dict.get(selected_route['route_name'].iloc[0])
 
-        for _, row in selected_route.iterrows():
-            folium.GeoJson(row.geometry, name=f"Route {row['route_name']}", style_function=lambda x:{
-        'weight': 2}).add_to(m)
+                for line in row.geometry.geoms:
+                    coords = [(point[1], point[0]) for point in line.coords]
+                    folium.PolyLine(coords, color=route_colour, weight=2, tooltip=f"<b>Route:</b> {selected_route['route_name'].iloc[0]}").add_to(m)
 
     # Df for all destinations from selected origin station
     fares_from_chosen_station = fare_zone_data.loc[fare_zone_data["Origin"]==chosen_station]
@@ -360,8 +372,6 @@ def bus():
     # Df for all bus stops, not filtered by chosen station
     all_stations = fare_zone_data.merge(od_coords, left_on="Destination", right_on="Stage")
     all_stations = all_stations.merge(fares_df, left_on="Fare Band", right_on="FareZone")
-
-
 
     unique_fares = fares_df.drop_duplicates(subset=['Fare'])
     fare_num = len(fares_df)
@@ -398,8 +408,6 @@ def bus():
             if row['Origin'] == chosen_station and row['Destination'] == destination_station:
                 fare_type = fares_from_chosen_station.iloc[i]['FareZone']
                 fare_cost = fares_from_chosen_station.iloc[i]['Fare']
-        st.sidebar.markdown('### You Have Selected:')
-        st.sidebar.write(f" A {chosen_payment_type} - {chosen_ticket_type} Ticket from {chosen_station} to {destination_station}, which costs €{fare_cost:.2f}.")
 
     if destination_station == "Any":
         #Loop through unique stations to add marker on map
@@ -411,13 +419,17 @@ def bus():
             fare = "€" +  f"{fares_from_chosen_station.iloc[i]['Fare']:.2f}"
             tool_tip = f"<b>Origin:</b> {origin}<br> <b>Destination:</b> {destination}<br> <b>Fare:</b> {fare}<br> <b>Fare Zone:</b> {fare_zone}"
 
+            if 'TF' in fare_zone_data[fare_zone_data['Destination'] == row['Destination']]['Fare Band'].to_list():
+                colour = 'purple'
+            else:
+                colour = 'blue'
             folium.CircleMarker(
                             location=coords,
                             radius=4,
                             color="#4e4e4e",
                             opacity=0.6,
                             weight=1,
-                            fill_color='blue',
+                            fill_color=colour,
                             fill_opacity=1,
                             tooltip=tool_tip,
                         ).add_to(m)
@@ -456,21 +468,35 @@ def bus():
     folium.Marker(location=origin_coords, tooltip=f'Origin Station: {chosen_station}', icon=icon_star).add_to(m)
     colour_map_dict = {key: tuple(int(255* value)for value in rgb) for key, rgb in colour_dict2.items()}
 
-    map_col, legend_col = st.columns([0.8,0.2])
+    map_col, legend_col = st.columns([0.7,0.3])
     with map_col:
         st.header("")
         st_data = st_folium(m, width=1200, returned_objects=[])
         
     with legend_col:
         st.header("")
-        if chosen_payment_type != 'Period ':
-            st.header("")
-        else:
-            st.text("")
+        st.text("")
         legend_image_path = os.path.join(main_path,'..', 'pics', "legend2.png")
         st.image(legend_image_path, width = 250)
 
-        buffer = 6
+    # Output table for all available tickets
+        if destination_station != chosen_station  and destination_station != 'Any':
+            output_fares = fares_from_chosen_station[(fares_from_chosen_station['Origin'] == chosen_station) & (fares_from_chosen_station['Destination'] == destination_station)]
+            output_fares = output_fares[['PaymentMeans','TicketType', 'Fare Band', 'Fare']]
+            output_fares = output_fares.sort_values(by='Fare', ascending=True)
+
+            output_fares = output_fares.drop_duplicates()
+            output_len = len(output_fares)
+            output_fares = output_fares.style.format({'Fare': '€{:.2f}'})
+            
+
+            st.dataframe(output_fares, hide_index=True, use_container_width=True)
+
+            buffer = 7 - output_len
+        
+        if destination_station == 'Any':
+            buffer = 6
+        
         for i in range(buffer):
             st.header("")
         st.text("")
